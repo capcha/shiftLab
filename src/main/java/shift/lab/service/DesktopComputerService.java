@@ -31,12 +31,12 @@ public class DesktopComputerService {
     }
 
     public DesktopComputer getDesktopComputerById(String desktopId) {
-        final DesktopComputer byId = desktopComputerDAO.getById(desktopId);
+        final DesktopComputer desktopComputer = desktopComputerDAO.getById(desktopId);
 
-        if (byId == null) {
+        if (desktopComputer == null) {
             throw new NotFoundException();
         }
 
-        return byId;
+        return desktopComputer;
     }
 }
