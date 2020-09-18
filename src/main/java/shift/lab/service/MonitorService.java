@@ -3,6 +3,7 @@ package shift.lab.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import shift.lab.dao.MonitorDAO;
+import shift.lab.exception.NotFoundException;
 import shift.lab.model.ProductList;
 import shift.lab.model.Monitor;
 
@@ -16,7 +17,13 @@ public class MonitorService {
     }
 
     public Monitor updateMonitor(Monitor monitor, String monitorId) {
-        return monitorDAO.update(monitor, monitorId);
+        final Monitor update = monitorDAO.update(monitor, monitorId);
+
+        if (update == null) {
+            throw new NotFoundException();
+        }
+
+        return update;
     }
 
     public ProductList<Monitor> getAllMonitors() {
@@ -24,6 +31,12 @@ public class MonitorService {
     }
 
     public Monitor getMonitorById(String monitorId) {
-        return monitorDAO.getById(monitorId);
+        final Monitor monitorById = monitorDAO.getById(monitorId);
+
+        if (monitorById == null) {
+            throw new NotFoundException();
+        }
+
+        return monitorById;
     }
 }

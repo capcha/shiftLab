@@ -3,6 +3,7 @@ package shift.lab.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import shift.lab.dao.DesktopComputerDAO;
+import shift.lab.exception.NotFoundException;
 import shift.lab.model.ProductList;
 import shift.lab.model.DesktopComputer;
 
@@ -16,7 +17,13 @@ public class DesktopComputerService {
     }
 
     public DesktopComputer updateDesktopComputer(DesktopComputer desktopComputer, String desktopComputerId) {
-        return desktopComputerDAO.update(desktopComputer, desktopComputerId);
+        final DesktopComputer update = desktopComputerDAO.update(desktopComputer, desktopComputerId);
+
+        if (update == null) {
+            throw new NotFoundException();
+        }
+
+        return update;
     }
 
     public ProductList<DesktopComputer> getAllDesktopComputers() {
@@ -24,6 +31,12 @@ public class DesktopComputerService {
     }
 
     public DesktopComputer getDesktopComputerById(String desktopId) {
-        return desktopComputerDAO.getById(desktopId);
+        final DesktopComputer byId = desktopComputerDAO.getById(desktopId);
+
+        if (byId == null) {
+            throw new NotFoundException();
+        }
+
+        return byId;
     }
 }

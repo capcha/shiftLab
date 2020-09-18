@@ -3,6 +3,7 @@ package shift.lab.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import shift.lab.dao.HardDriveDAO;
+import shift.lab.exception.NotFoundException;
 import shift.lab.model.HardDrive;
 import shift.lab.model.ProductList;
 
@@ -16,7 +17,13 @@ public class HardDriveService {
     }
 
     public HardDrive updateHardDrive(HardDrive hardDrive, String hardDriveId) {
-        return hardDriveDAO.update(hardDrive, hardDriveId);
+        HardDrive update = hardDriveDAO.update(hardDrive, hardDriveId);
+
+        if (update == null) {
+            throw new NotFoundException();
+        }
+
+        return update;
     }
 
     public ProductList<HardDrive> getAllHardDrives() {
@@ -24,6 +31,12 @@ public class HardDriveService {
     }
 
     public HardDrive getHardDriveById(String hardDriveId) {
-        return hardDriveDAO.getById(hardDriveId);
+        final HardDrive hardDriveById = hardDriveDAO.getById(hardDriveId);
+
+        if (hardDriveById == null) {
+            throw new NotFoundException();
+        }
+
+        return hardDriveById;
     }
 }

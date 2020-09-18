@@ -5,18 +5,20 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import shift.lab.model.ProductList;
-import shift.lab.exception.NotFoundException;
 import shift.lab.model.Monitor;
+import shift.lab.model.Price;
+import shift.lab.model.ProductList;
 import shift.lab.rowmapper.MonitorRowMapper;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @AllArgsConstructor
 public class MonitorDAO {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final MonitorRowMapper monitorRowMapper;
 
     private static final String insertSql = "insert into MONITORS (SERIAL_NUMBER, MANUFACTURER, " +
             "PRICE, CURRENCY, AMOUNT, DIAGONAL) " +
@@ -37,11 +39,19 @@ public class MonitorDAO {
     private static final String getAllSql = "select * from MONITORS";
 
     public Monitor create(Monitor monitor) {
+        String value = Optional.ofNullable(monitor.getPrice())
+                .map((price) -> price.getValue().toString())
+                .orElse(null);
+
+        String currency = Optional.ofNullable(monitor.getPrice())
+                .map(Price::getCurrency)
+                .orElse(null);
+
         MapSqlParameterSource monitorParams = new MapSqlParameterSource()
                 .addValue("serialNumber", monitor.getSerialNumber())
                 .addValue("manufacturer", monitor.getManufacturer())
-                .addValue("price", monitor.getPrice().getValue())
-                .addValue("currency", monitor.getPrice().getCurrency())
+                .addValue("price", value)
+                .addValue("currency", currency)
                 .addValue("amount", monitor.getAmount())
                 .addValue("diagonal", monitor.getDiagonal());
 
@@ -51,23 +61,17 @@ public class MonitorDAO {
 
         String monitorId = Objects.requireNonNull(generatedKeyHolder.getKeys()).get("MONITOR_ID").toString();
 
-        return new Monitor(monitorId,
-                monitor.getSerialNumber(),
-                monitor.getManufacturer(),
-                monitor.getPrice(),
-                monitor.getAmount(),
-                monitor.getDiagonal()
-        );
+        return getById(monitorId);
     }
 
     public Monitor update(Monitor monitor, String monitorId) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("monitorId", monitorId);
 
-        List<Monitor> monitorQuery = jdbcTemplate.query(getByIdSql, params, new MonitorRowMapper());
+        List<Monitor> monitorQuery = jdbcTemplate.query(getByIdSql, params, monitorRowMapper);
 
-        if (monitorQuery.size() == 0) {
-            throw new NotFoundException();
+        if (monitorQuery.isEmpty()) {
+            return null;
         }
 
         MapSqlParameterSource monitorParams = new MapSqlParameterSource()
@@ -81,11 +85,11 @@ public class MonitorDAO {
 
         jdbcTemplate.update(updateSql, monitorParams);
 
-        return jdbcTemplate.query(getByIdSql, params, new MonitorRowMapper()).get(0);
+        return jdbcTemplate.query(getByIdSql, params, monitorRowMapper).get(0);
     }
 
     public ProductList<Monitor> getAll() {
-        List<Monitor> monitors = jdbcTemplate.query(getAllSql, new MonitorRowMapper());
+        List<Monitor> monitors = jdbcTemplate.query(getAllSql, monitorRowMapper);
 
         return new ProductList<>(monitors);
     }
@@ -94,10 +98,10 @@ public class MonitorDAO {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("monitorId", monitorId);
 
-        List<Monitor> monitorQuery = jdbcTemplate.query(getByIdSql, params, new MonitorRowMapper());
+        List<Monitor> monitorQuery = jdbcTemplate.query(getByIdSql, params, monitorRowMapper);
 
-        if (monitorQuery.size() == 0) {
-            throw new NotFoundException();
+        if (monitorQuery.isEmpty()) {
+            return null;
         }
 
         return monitorQuery.get(0);

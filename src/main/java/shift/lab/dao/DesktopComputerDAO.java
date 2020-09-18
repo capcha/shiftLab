@@ -5,18 +5,20 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import shift.lab.exception.NotFoundException;
 import shift.lab.model.DesktopComputer;
+import shift.lab.model.Price;
 import shift.lab.model.ProductList;
 import shift.lab.rowmapper.DesktopComputerRowMapper;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @AllArgsConstructor
 public class DesktopComputerDAO {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final DesktopComputerRowMapper desktopComputerRowMapper; 
 
     private static final String insertSql = "insert into DESKTOPS (SERIAL_NUMBER, MANUFACTURER, " +
             "PRICE, CURRENCY, AMOUNT, FORM_FACTOR) " +
@@ -37,11 +39,19 @@ public class DesktopComputerDAO {
     private static final String getAllSql = "select * from DESKTOPS";
 
     public DesktopComputer create(DesktopComputer desktopComputer) {
+        String value = Optional.ofNullable(desktopComputer.getPrice())
+                .map((price) -> price.getValue().toString())
+                .orElse(null);
+
+        String currency = Optional.ofNullable(desktopComputer.getPrice())
+                .map(Price::getCurrency)
+                .orElse(null);
+
         MapSqlParameterSource desktopComputerParams = new MapSqlParameterSource()
                 .addValue("serialNumber", desktopComputer.getSerialNumber())
                 .addValue("manufacturer", desktopComputer.getManufacturer())
-                .addValue("price", desktopComputer.getPrice().getValue())
-                .addValue("currency", desktopComputer.getPrice().getCurrency())
+                .addValue("price", value)
+                .addValue("currency", currency)
                 .addValue("amount", desktopComputer.getAmount())
                 .addValue("formFactor", desktopComputer.getFormFactor().name());
 
@@ -51,23 +61,17 @@ public class DesktopComputerDAO {
 
         String desktopId = Objects.requireNonNull(generatedKeyHolder.getKeys()).get("DESKTOP_ID").toString();
 
-        return new DesktopComputer(desktopId,
-                desktopComputer.getSerialNumber(),
-                desktopComputer.getManufacturer(),
-                desktopComputer.getPrice(),
-                desktopComputer.getAmount(),
-                desktopComputer.getFormFactor()
-        );
+        return getById(desktopId);
     }
 
     public DesktopComputer update(DesktopComputer desktopComputer, String desktopId) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("desktopId", desktopId);
 
-        List<DesktopComputer> desktopComputerQuery = jdbcTemplate.query(getByIdSql, params, new DesktopComputerRowMapper());
+        List<DesktopComputer> desktopComputerQuery = jdbcTemplate.query(getByIdSql, params, desktopComputerRowMapper);
 
-        if (desktopComputerQuery.size() == 0) {
-            throw new NotFoundException();
+        if (desktopComputerQuery.isEmpty()) {
+            return null;
         }
 
         MapSqlParameterSource desktopComputerParams = new MapSqlParameterSource()
@@ -81,11 +85,11 @@ public class DesktopComputerDAO {
 
         jdbcTemplate.update(updateSql, desktopComputerParams);
 
-        return jdbcTemplate.query(getByIdSql, params, new DesktopComputerRowMapper()).get(0);
+        return jdbcTemplate.query(getByIdSql, params, desktopComputerRowMapper).get(0);
     }
 
     public ProductList<DesktopComputer> getAll() {
-        List<DesktopComputer> desktopComputers = jdbcTemplate.query(getAllSql, new DesktopComputerRowMapper());
+        List<DesktopComputer> desktopComputers = jdbcTemplate.query(getAllSql, desktopComputerRowMapper);
 
         return new ProductList<>(desktopComputers);
     }
@@ -95,10 +99,10 @@ public class DesktopComputerDAO {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("desktopId", desktopId);
 
-        List<DesktopComputer> desktopComputerQuery = jdbcTemplate.query(getByIdSql, params, new DesktopComputerRowMapper());
+        List<DesktopComputer> desktopComputerQuery = jdbcTemplate.query(getByIdSql, params, desktopComputerRowMapper);
 
-        if (desktopComputerQuery.size() == 0) {
-            throw new NotFoundException();
+        if (desktopComputerQuery.isEmpty()) {
+            return null;
         }
 
         return desktopComputerQuery.get(0);
