@@ -31,12 +31,12 @@ public class HardDriveService {
     }
 
     public HardDrive getHardDriveById(String hardDriveId) {
-        final HardDrive hardDriveById = hardDriveDAO.getById(hardDriveId);
+        final HardDrive hardDrive = hardDriveDAO.getById(hardDriveId);
 
-        if (hardDriveById == null) {
+        if (hardDrive == null) {
             throw new NotFoundException();
         }
 
-        return hardDriveById;
+        return hardDrive;
     }
 }

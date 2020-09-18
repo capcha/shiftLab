@@ -31,12 +31,12 @@ public class LaptopService {
     }
 
     public Laptop getLaptopById(String laptopId) {
-        final Laptop laptopById = laptopDAO.getById(laptopId);
+        final Laptop laptop = laptopDAO.getById(laptopId);
 
-        if (laptopById == null) {
+        if (laptop == null) {
             throw new NotFoundException();
         }
 
-        return laptopById;
+        return laptop;
     }
 }

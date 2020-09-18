@@ -31,12 +31,12 @@ public class MonitorService {
     }
 
     public Monitor getMonitorById(String monitorId) {
-        final Monitor monitorById = monitorDAO.getById(monitorId);
+        final Monitor monitor = monitorDAO.getById(monitorId);
 
-        if (monitorById == null) {
+        if (monitor == null) {
             throw new NotFoundException();
         }
 
-        return monitorById;
+        return monitor;
     }
 }
