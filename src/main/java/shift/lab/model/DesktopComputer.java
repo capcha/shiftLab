@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 public class DesktopComputer extends Product {
     /**
-     * Форм фактор настольного компьютера (стоит ли использовать enum?)
+     * Форм фактор настольного компьютера
      */
     private FormFactor formFactor;
 

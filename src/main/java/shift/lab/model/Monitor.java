@@ -9,7 +9,7 @@ import lombok.Getter;
  */
 
 @Getter
-public class Monitor extends Product{
+public class Monitor extends Product {
     /**
      * Диагональ монитора
      */
